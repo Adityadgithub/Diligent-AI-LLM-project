@@ -7,6 +7,7 @@ A retrieval-augmented chat application that combines a locally hosted LLaMA 2 
 - Retrieval-Augmented Generation via Pinecone + sentence-transformer embeddings.
 - FastAPI backend with streaming-ready `/chat` endpoint.
 - Minimal HTML/JS frontend for quick experimentation.
+- Built by Aditya Dwivedi (24MCAA01) — [LinkedIn](https://www.linkedin.com/in/aditya-dwivedi-622776131/) · [GitHub](https://github.com/Adityadgithub)
 
 ## Repository Structure
 - `backend/`
