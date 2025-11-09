@@ -1,13 +1,14 @@
 # Jarvis Knowledge Assistant
 
 A retrieval-augmented chat application that combines a locally hosted LLaMA 2 7B (Q4\_K\_M) model with a Pinecone vector index built from four detailed computer-science study guides (OOP, Computer Architecture, Operating Systems, and SDLC). A lightweight HTML interface lets users converse with “Jarvis” while the backend performs retrieval over Pinecone and produces grounded responses.
+- Built by Aditya Dwivedi (24MCAA01) — [LinkedIn](https://www.linkedin.com/in/aditya-dwivedi-622776131/) · [GitHub](https://github.com/Adityadgithub)
 
 ## Highlights
 - Local inference with `llama-cpp-python` (CPU by default; GPU optional).
 - Retrieval-Augmented Generation via Pinecone + sentence-transformer embeddings.
 - FastAPI backend with streaming-ready `/chat` endpoint.
 - Minimal HTML/JS frontend for quick experimentation.
-- Built by Aditya Dwivedi (24MCAA01) — [LinkedIn](https://www.linkedin.com/in/aditya-dwivedi-622776131/) · [GitHub](https://github.com/Adityadgithub)
+
 
 ## Repository Structure
 - `backend/`
