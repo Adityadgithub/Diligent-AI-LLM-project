@@ -22,3 +22,24 @@ PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "jarvis-knowledge-index")
 PINECONE_NAMESPACE = os.getenv("PINECONE_NAMESPACE", "default")
 
+
+def _parse_environment(env: str | None):
+    if not env:
+        return None, None
+    env = env.strip()
+    lowered = env.lower()
+    suffix_map = {
+        "-aws": "aws",
+        "-gcp": "gcp",
+        "-azure": "azure",
+    }
+    for suffix, cloud in suffix_map.items():
+        if lowered.endswith(suffix):
+            region = env[: -len(suffix)]
+            return cloud, region
+    # default assumption when only region is provided (e.g. us-east-1)
+    return "aws", env
+
+
+PINECONE_CLOUD, PINECONE_REGION = _parse_environment(PINECONE_ENVIRONMENT)
+

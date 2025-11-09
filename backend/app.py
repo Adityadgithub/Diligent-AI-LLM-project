@@ -2,15 +2,14 @@ import logging
 from functools import lru_cache
 from typing import List
 
-import pinecone
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-
 from langchain.prompts import PromptTemplate
+from langchain.schema import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.llms import LlamaCpp
-from langchain.vectorstores import Pinecone as PineconeVectorStore
+from pinecone import Pinecone
+from pydantic import BaseModel, Field
 
 from config import (
     DATA_DIR,
@@ -20,7 +19,6 @@ from config import (
     LLM_TEMPERATURE,
     MODEL_PATH,
     PINECONE_API_KEY,
-    PINECONE_ENVIRONMENT,
     PINECONE_INDEX_NAME,
     PINECONE_NAMESPACE,
 )
@@ -58,16 +56,21 @@ def ensure_resources_exist():
         raise FileNotFoundError(f"Model not found at {MODEL_PATH}.")
     if not DATA_DIR.exists():
         raise FileNotFoundError(f"Data directory not found at {DATA_DIR}.")
-    if not PINECONE_API_KEY or not PINECONE_ENVIRONMENT:
+    if not PINECONE_API_KEY:
         raise RuntimeError(
-            "PINECONE_API_KEY and PINECONE_ENVIRONMENT must be set before starting the API."
+            "PINECONE_API_KEY must be set before starting the API."
         )
 
 
 @lru_cache
+def get_pinecone_client() -> Pinecone:
+    return Pinecone(api_key=PINECONE_API_KEY)
+
+
+@lru_cache
 def initialize_pinecone() -> None:
-    pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENVIRONMENT)
-    indexes = pinecone.list_indexes()
+    client = get_pinecone_client()
+    indexes = client.list_indexes().names()
     if PINECONE_INDEX_NAME not in indexes:
         raise RuntimeError(
             f"Pinecone index '{PINECONE_INDEX_NAME}' not found. Run `python ingest.py` to build it."
@@ -84,21 +87,41 @@ def get_embeddings():
     )
 
 
-@lru_cache
-def get_vector_store():
-    embeddings = get_embeddings()
-    initialize_pinecone()
-    logger.info(
-        "Connecting to Pinecone index '%s' (namespace: %s)",
-        PINECONE_INDEX_NAME,
-        PINECONE_NAMESPACE,
-    )
-    try:
-        return PineconeVectorStore(
-            index_name=PINECONE_INDEX_NAME,
-            embedding=embeddings,
-            namespace=PINECONE_NAMESPACE,
+class PineconeRetriever:
+    def __init__(self, index, embeddings, namespace: str):
+        self.index = index
+        self.embeddings = embeddings
+        self.namespace = namespace
+
+    def get_relevant_documents(self, query: str, k: int = 4):
+        vector = self.embeddings.embed_query(query)
+        response = self.index.query(
+            namespace=self.namespace,
+            vector=vector,
+            top_k=k,
+            include_metadata=True,
         )
+        docs: List[Document] = []
+        for match in response.matches or []:
+            metadata = match.metadata or {}
+            text = metadata.pop("text", "")
+            docs.append(Document(page_content=text, metadata=metadata))
+        return docs
+
+
+@lru_cache
+def get_retriever():
+    embeddings = get_embeddings()
+    client = get_pinecone_client()
+    initialize_pinecone()
+    try:
+        index = client.Index(PINECONE_INDEX_NAME)
+        logger.info(
+            "Connecting to Pinecone index '%s' (namespace: %s)",
+            PINECONE_INDEX_NAME,
+            PINECONE_NAMESPACE,
+        )
+        return PineconeRetriever(index=index, embeddings=embeddings, namespace=PINECONE_NAMESPACE)
     except Exception as exc:  # pragma: no cover - defensive logging
         logger.exception("Failed to connect to Pinecone index: %s", exc)
         raise RuntimeError(
@@ -160,17 +183,15 @@ async def startup_event():
     # Trigger lazy loading so startup errors surface early.
     get_embeddings()
     initialize_pinecone()
-    get_vector_store()
+    get_retriever()
     get_llm()
     logger.info("Application startup complete.")
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    vector_store = get_vector_store()
-    retriever = vector_store.as_retriever(search_kwargs={"k": 4})
-
-    docs = retriever.get_relevant_documents(request.message)
+    retriever = get_retriever()
+    docs = retriever.get_relevant_documents(request.message, k=4)
     if not docs:
         raise HTTPException(status_code=404, detail="No relevant context found. Please ingest data first.")
 

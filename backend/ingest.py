@@ -4,20 +4,20 @@ import time
 from pathlib import Path
 from typing import Iterable
 
-import pinecone
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Pinecone as PineconeVectorStore
+from pinecone import Pinecone, ServerlessSpec
 
 from config import (
     DATA_DIR,
     EMBEDDING_DIMENSION,
     EMBEDDING_MODEL_NAME,
     PINECONE_API_KEY,
-    PINECONE_ENVIRONMENT,
+    PINECONE_CLOUD,
     PINECONE_INDEX_NAME,
     PINECONE_NAMESPACE,
+    PINECONE_REGION,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -51,32 +51,37 @@ def init_embeddings():
     )
 
 
-def ensure_pinecone_index(recreate: bool = False):
-    if not PINECONE_API_KEY or not PINECONE_ENVIRONMENT:
-        raise EnvironmentError(
-            "PINECONE_API_KEY and PINECONE_ENVIRONMENT must be set before ingesting data."
-        )
+def init_client() -> Pinecone:
+    if not PINECONE_API_KEY:
+        raise EnvironmentError("PINECONE_API_KEY must be set before ingesting data.")
+    return Pinecone(api_key=PINECONE_API_KEY)
 
-    pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENVIRONMENT)
 
-    existing_indexes = pinecone.list_indexes()
-    if PINECONE_INDEX_NAME in existing_indexes and recreate:
+def ensure_pinecone_index(client: Pinecone, recreate: bool = False):
+    index_list = client.list_indexes().names()
+    if PINECONE_INDEX_NAME in index_list and recreate:
         logging.info("Deleting existing Pinecone index '%s'...", PINECONE_INDEX_NAME)
-        pinecone.delete_index(PINECONE_INDEX_NAME)
-        while PINECONE_INDEX_NAME in pinecone.list_indexes():
-            time.sleep(1)
+        client.delete_index(PINECONE_INDEX_NAME)
+        while PINECONE_INDEX_NAME in client.list_indexes().names():
+            time.sleep(0.5)
 
-    if PINECONE_INDEX_NAME not in pinecone.list_indexes():
-        logging.info("Creating Pinecone index '%s'...", PINECONE_INDEX_NAME)
-        pinecone.create_index(
+    if PINECONE_INDEX_NAME not in client.list_indexes().names():
+        cloud = PINECONE_CLOUD or "gcp"
+        region = PINECONE_REGION or "us-east1"
+        logging.info(
+            "Creating Pinecone serverless index '%s' (cloud=%s, region=%s)...",
+            PINECONE_INDEX_NAME,
+            cloud,
+            region,
+        )
+        client.create_index(
             name=PINECONE_INDEX_NAME,
-            metric="cosine",
             dimension=EMBEDDING_DIMENSION,
-            pods=1,
-            pod_type="s1.x1",
+            metric="cosine",
+            spec=ServerlessSpec(cloud=cloud, region=region),
         )
         while True:
-            description = pinecone.describe_index(PINECONE_INDEX_NAME)
+            description = client.describe_index(PINECONE_INDEX_NAME)
             status = description.get("status", {})
             if status.get("ready"):
                 break
@@ -86,36 +91,56 @@ def ensure_pinecone_index(recreate: bool = False):
         logging.info("Using existing Pinecone index '%s'.", PINECONE_INDEX_NAME)
 
 
-def upsert_chunks(chunks: Iterable, embeddings, namespace: str):
+def upsert_chunks(client: Pinecone, chunks: Iterable, embeddings, namespace: str):
+    index = client.Index(PINECONE_INDEX_NAME)
+    chunk_list = list(chunks)
     logging.info(
         "Upserting %d chunks into Pinecone index '%s' (namespace: %s)...",
-        len(chunks),
+        len(chunk_list),
         PINECONE_INDEX_NAME,
         namespace,
     )
-    PineconeVectorStore.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        index_name=PINECONE_INDEX_NAME,
-        namespace=namespace,
-    )
+    batch_size = 64
+    counter = 0
+    for start in range(0, len(chunk_list), batch_size):
+        batch = chunk_list[start : start + batch_size]
+        texts = [doc.page_content for doc in batch]
+        vectors = embeddings.embed_documents(texts)
+        payloads = []
+        for vector, doc in zip(vectors, batch):
+            metadata = dict(doc.metadata) if doc.metadata else {}
+            metadata["text"] = doc.page_content
+            metadata.setdefault("chunk_id", f"{counter}")
+            payloads.append(
+                {
+                    "id": f"{namespace}-{counter}",
+                    "values": list(map(float, vector)),
+                    "metadata": metadata,
+                }
+            )
+            counter += 1
+        index.upsert(vectors=payloads, namespace=namespace)
+
+
+def clear_namespace(client: Pinecone, namespace: str):
+    logging.info("Clearing namespace '%s' before upserting new data.", namespace)
+    index = client.Index(PINECONE_INDEX_NAME)
+    try:
+        index.delete(delete_all=True, namespace=namespace)
+    except Exception as exc:
+        logging.debug("Namespace deletion ignored: %s", exc)
 
 
 def main(force: bool = False):
-    ensure_pinecone_index(recreate=force)
+    client = init_client()
+    ensure_pinecone_index(client, recreate=force)
 
     documents = load_documents(DATA_DIR)
     chunks = create_chunks(documents)
     embeddings = init_embeddings()
 
-    if not force:
-        index = pinecone.Index(PINECONE_INDEX_NAME)
-        logging.info(
-            "Clearing namespace '%s' before upserting new data.", PINECONE_NAMESPACE
-        )
-        index.delete(deleteAll=True, namespace=PINECONE_NAMESPACE)
-
-    upsert_chunks(chunks, embeddings, namespace=PINECONE_NAMESPACE)
+    clear_namespace(client, PINECONE_NAMESPACE)
+    upsert_chunks(client, chunks, embeddings, namespace=PINECONE_NAMESPACE)
     logging.info(
         "Ingestion complete. Pinecone index '%s' now contains the latest data.",
         PINECONE_INDEX_NAME,

@@ -52,6 +52,7 @@ PINECONE_ENVIRONMENT=us-east1-gcp      # or the environment shown in the Pinecon
 PINECONE_INDEX_NAME=jarvis-knowledge-index
 PINECONE_NAMESPACE=default
 ```
+The ingestion script parses `PINECONE_ENVIRONMENT` to derive the serverless cloud/region (e.g. `us-east1-gcp` → cloud=`gcp`, region=`us-east1`). Override those defaults by setting `PINECONE_ENVIRONMENT` accordingly.
 
 ### Build / Refresh the Pinecone Index
 ```powershell
