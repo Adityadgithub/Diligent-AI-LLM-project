@@ -1,0 +1,20 @@
+Operating systems (OS) are the fundamental software layer that manages hardware resources and provides services to user applications. Core responsibilities include process management, memory management, file systems, device management, security, and networking.
+
+Process and Thread Management: The OS creates processes using system calls (fork, exec) and schedules them via algorithms such as round-robin, multilevel feedback queue, or completely fair scheduling. Threads enable finer-grained concurrency within processes. Context switching, synchronization primitives (mutexes, semaphores, monitors), deadlock detection/avoidance, and interprocess communication (pipes, message queues, shared memory) are vital topics.
+
+Memory Management: Virtual memory abstracts physical RAM, using paging or segmentation. Paging employs page tables, TLBs, and page replacement policies (LRU, CLOCK). Demand paging and copy-on-write optimize memory usage. Kernel memory allocators manage internal data structures; user-level memory allocators (malloc/free) interact via system calls (brk, mmap).
+
+File Systems: The OS provides persistent storage via file systems like ext4, NTFS, APFS. Concepts include inodes, directories, journaling, and metadata. Disk scheduling algorithms (FCFS, SSTF, SCAN) optimize access patterns. Distributed file systems (NFS, HDFS) enable networked storage.
+
+Device Management and Drivers: Device drivers abstract hardware specifics, presenting uniform interfaces to user space. Interrupt handling, direct memory access (DMA), and Plug and Play frameworks coordinate device operations. Modern OS kernels support modular drivers and hot-plugging.
+
+Security: OS security layers enforce authentication, authorization, auditing, and accounting. Mechanisms include user and group permissions, capabilities, access control lists, SELinux policies, sandboxing, mandatory access control, and trusted computing bases. Kernel hardening counters vulnerabilities; secure boot ensures integrity at startup.
+
+Networking: The OS implements protocol stacks (TCP/IP) within the kernel. Socket APIs expose network functionality to applications. Packet scheduling, firewalling (iptables, Windows Filtering Platform), and traffic shaping are part of network subsystems.
+
+Virtualization and Containers: Hypervisors (Type 1 and Type 2) provide hardware-level virtualization, enabling multiple guest OSes. Containers (Docker, LXC) leverage kernel namespaces and cgroups for lightweight isolation. Paravirtualization and hardware support (Intel VT-x, AMD-V) improve efficiency.
+
+Kernel Architectures: Monolithic kernels (Linux), microkernels (seL4, QNX), and hybrid kernels (Windows, XNU) differ in how services are structured. Design trade-offs involve performance, reliability, and extensibility. Kernel modules extend functionality without recompiling the entire kernel.
+
+Reliability and Performance: Logging, checkpointing, load balancing, and system monitoring tools assist in maintenance. OS performance tuning involves analyzing CPU usage, I/O wait, memory pressure, and scheduler behavior. Real-time operating systems guarantee timing constraints via deterministic scheduling.
+

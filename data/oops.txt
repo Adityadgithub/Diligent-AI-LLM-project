@@ -1,0 +1,20 @@
+Object-Oriented Programming (OOP) is a programming paradigm organized around data, or objects, rather than functions and logic. It models real-world entities as software objects that have attributes (data) and behaviors (methods). Four core pillars define classic OOP:
+
+Encapsulation: Bundling data and the methods that operate on that data within a class. Encapsulation hides the internal representation of an object, enabling information hiding, reducing coupling, and protecting invariants. Access modifiers such as public, private, and protected (or their equivalents) control visibility in languages like C++, Java, and Python.
+
+Inheritance: Mechanism by which one class (the subclass) derives from another class (the base class), inheriting its attributes and behaviors. Inheritance promotes code reuse and establishes relationships such as IS-A. Different forms of inheritance include single, multiple, multilevel, hierarchical, and hybrid. Proper use of inheritance requires awareness of fragile base class problems and encourages favoring composition when inheritance relationships are not semantically sound.
+
+Polymorphism: The ability for different classes to be treated uniformly through a common interface. Compile-time (static) polymorphism includes method overloading and operator overloading, where the compiler resolves which method to invoke. Runtime (dynamic) polymorphism relies on virtual methods and interfaces: the dispatch of the correct method implementation occurs at runtime, enabling behaviors like substitutability and the Open/Closed principle.
+
+Abstraction: Modeling essential characteristics while omitting irrelevant details. Abstract classes and interfaces define contracts that concrete subclasses implement. Abstraction simplifies complex systems by focusing on high-level operations. Generalization and specialization are abstraction techniques that help manage complexity through layered designs.
+
+Class Design Principles: SOLID principles (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion) guide maintainable class designs. Cohesion within classes and low coupling between classes lead to robust architectures. Anti-patterns such as God objects, circular dependencies, and deep inheritance hierarchies should be avoided.
+
+Object Lifecycle: Objects are instantiated via constructors that initialize state. Destructors or finalizers release resources. In garbage-collected languages, memory management is automated, while in languages like C++ RAII (Resource Acquisition Is Initialization) ensures deterministic resource release. Copy and move semantics determine how objects are duplicated or transferred.
+
+Design Patterns: Creational patterns (Singleton, Factory Method, Abstract Factory, Builder, Prototype), Structural patterns (Adapter, Facade, Decorator, Composite, Proxy), and Behavioral patterns (Strategy, Observer, Command, Template Method, State) provide reusable solutions to common design problems. Patterns should be applied judiciously to avoid overengineering.
+
+UML Modeling: Class diagrams depict classes, attributes, operations, and relationships (association, aggregation, composition, inheritance). Sequence diagrams model dynamic interactions. UML assists in communicating designs before implementation.
+
+Testing and Refactoring: Unit tests verify class behavior in isolation. Test doubles (mocks/stubs) facilitate testing collaborations. Refactoring techniques, including Extract Method, Replace Conditional with Polymorphism, and Introduce Parameter Object, improve readability and adaptability while ensuring tests remain green.
+

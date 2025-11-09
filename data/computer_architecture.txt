@@ -1,0 +1,18 @@
+Computer architecture describes the organization and behavior of a computer system, spanning the instruction set, microarchitecture, memory hierarchy, and system-level integration. It balances performance, power, cost, and programmability.
+
+Instruction Set Architecture (ISA): Defines the programmer-visible interface, including registers, addressing modes, instruction formats, and semantics. Examples include x86-64 (CISC) and ARMv8 (RISC). ISA decisions influence compiler design, binary compatibility, and microarchitectural implementation complexity.
+
+CPU Pipeline: Modern processors implement instruction-level parallelism via pipelining stages (fetch, decode, execute, memory, write-back). Hazards—structural, data, and control—can stall pipelines. Techniques such as forwarding, branch prediction, out-of-order execution, superscalar pipelines, and speculative execution mitigate hazards and maximize throughput.
+
+Caches and Memory Hierarchy: To bridge the CPU-memory speed gap, systems employ multiple cache levels (L1/L2/L3) with policies for associativity, replacement, and write strategies. Main memory, usually DRAM, connects via memory controllers. Virtual memory provides address translation using page tables and TLBs, enabling isolation and larger address spaces. NUMA architectures require locality-aware memory management.
+
+Parallelism: Beyond ILP, designers exploit data-level parallelism (SIMD extensions like AVX, NEON), thread-level parallelism (multicore processors, simultaneous multithreading), and task-level parallelism (heterogeneous systems with GPUs, TPUs). Synchronization constructs (locks, barriers, atomic instructions) manage shared state.
+
+Performance Metrics: CPI (cycles per instruction), IPC (instructions per cycle), and clock frequency drive CPU performance. The Roofline model relates computational intensity to attainable throughput, considering memory bandwidth. Amdahl’s and Gustafson’s laws provide insights on parallel speedup limitations.
+
+Power and Thermal Considerations: Dynamic voltage and frequency scaling (DVFS), power gating, and clock gating curb power consumption. Thermal design power (TDP) bounds processor heat output; cooling solutions and packaging influence sustained performance.
+
+Interconnects and I/O: Buses and point-to-point links (PCIe, Infinity Fabric, Intel UPI) connect CPUs to peripherals. On-chip networks (NoCs) facilitate multicore communication. Storage interfaces (SATA, NVMe) and high-speed networking (Ethernet, InfiniBand) shape system capabilities.
+
+Emerging Trends: Domain-specific architectures (GPUs, tensor accelerators), chiplet-based designs, near-memory computing, and quantum accelerators target specialized workloads. Security-focused features include trusted execution environments (Intel SGX, ARM TrustZone) and mitigations for speculative execution attacks (Meltdown, Spectre).
+

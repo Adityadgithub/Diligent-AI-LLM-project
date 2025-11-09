@@ -1,0 +1,22 @@
+The Software Development Life Cycle (SDLC) defines a structured process for delivering high-quality software systems. It covers planning, requirements analysis, design, implementation, testing, deployment, and maintenance. Different SDLC models tailor these phases to organizational needs and project risk profiles.
+
+Classical Waterfall: Sequential phases with well-defined documentation at each stage. Suitable when requirements are stable and regulatory compliance demands formal approvals. However, waterfall is rigid to change and can defer risk discovery until late stages.
+
+Iterative and Incremental Development: Projects progress through repeated cycles, refining requirements and delivering increments. The Rational Unified Process (RUP) organizes work into inception, elaboration, construction, and transition phases, emphasizing risk-driven iterations.
+
+Agile Methodologies: Frameworks such as Scrum, Kanban, and Extreme Programming embrace adaptive planning, cross-functional teams, and continuous delivery of working software. Practices include sprint planning, daily stand-ups, backlog grooming, retrospectives, test-driven development, pair programming, and continuous integration.
+
+DevOps and Continuous Delivery: Extends Agile principles beyond development, integrating operations for rapid, reliable releases. Automation pipelines cover build, test, security scanning, infrastructure-as-code, container orchestration (Kubernetes), and monitoring. Site reliability engineering (SRE) principles balance reliability with innovation through error budgets and observability.
+
+Requirements Engineering: Techniques include stakeholder interviews, user stories, use cases, personas, and acceptance criteria. Requirements must be validated for feasibility, prioritized (MoSCoW, WSJF), and traced through the lifecycle to ensure coverage.
+
+Software Design: High-level architecture defines system components, integration patterns, and quality attributes (performance, scalability, security, maintainability). Design notations include UML diagrams, architecture decision records (ADRs), and modeling tools. Low-level design details class responsibilities, data structures, and algorithms. Design reviews and prototyping mitigate architectural risk.
+
+Implementation Practices: Coding standards, static analysis, secure coding guidelines (OWASP), and code reviews uphold quality. Version control workflows (GitFlow, trunk-based development) coordinate collaboration. Technical debt management ensures long-term maintainability.
+
+Testing Strategies: Testing pyramid emphasizes unit, integration, and system tests. Additional layers include acceptance testing, performance testing, security testing, and usability testing. Automated regression suites and continuous testing reduce feedback loops. Test metrics (coverage, defect density) inform quality.
+
+Deployment and Release: Release management strategies (blue-green, canary, feature flags) minimize downtime and risk. Infrastructure automation (Terraform, Ansible) and configuration management maintain consistency across environments. Rollback plans and post-deployment verification protect service reliability.
+
+Maintenance and Operations: Post-release activities involve monitoring (APM, logging, tracing), incident management (on-call rotations, runbooks), change management (ITIL), and continuous improvement. Metrics like MTTR and MTBF quantify operational health. Technical support and user feedback inform future iterations.
+
